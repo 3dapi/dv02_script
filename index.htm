@@ -1,0 +1,1399 @@
+<?php
+	include '../base/lc_header.php';
+	include '../base/lc_util.php';
+?>
+
+<!--------------------------- Body Begin ---------------------------------------->
+
+<div class="Section1">
+
+<br>
+<h1>◈1 Beginning Lua Script◈</h1>
+<h2>1 Beginning Lua Script</h2>
+<br>루아 스크립트(이하 루아, www.lua.org)는 지구 반대편 브라질의 리우 데자네이로에 있는
+<br>PUC-Rio(Pontifical Catholic University of Rio de Janeiro)에서 처음 만들어져 사용하기
+<br>편리하고, 코드가 작고, 빠르고, 이식성과 embedding가 뛰어나고, 사용에서 라이센스
+<br>지불이 없는 무료인 스크립트 언어입니다.
+<br>
+<br>이 스크립트 언어가 아주 잘 만들어졌음에도 불구하고 브라질이라는 나라의 선입관
+<br>때문인지 널리 알려진 언어가 아니었는데 Lucas Arts에서 게임에 적용해본 후, 우수한
+<br>성능이 입증이 되어 World of Warcraft에서 그 진가를 입증되어 지금은 게임제작의
+<br>스크립트 언어에서 다른 스크립트언어들 보다 타의 추종을 불허 합니다.
+<br>
+<br>언어에 대해서 성능 비교에 대한 개발자들의 상이한 평가를 볼 수 있는데 중심은 누가
+<br>언어를 사용하는가에 대한 관점과 프로젝트를 완수하는 시간을 고려해야 올바르다고
+<br>할 수 있습니다.
+<br>
+<br>루아는 문법과 변수의 타입이 간결해서 1시간 정도면 충분히 익히고 바로 실전에서 적용해
+<br>볼 수 있을 정도로 배우는데 쉽고 또한 embedding를 하는데 번거롭지 않아 응용프로그램에
+<br>쉽게 정착을 할 수 있습니다. 이러한 부분이 다른 스크립트 언어가 따라올 수 없는 루아의
+<br>가장 큰 매력입니다. 또한 PDA와 같은 기기에 해당하는 응용프로그램에도 쉽게 잘 붙을
+<br>정도로 크기가 작습니다.
+<br>
+<br>이러한 장점이 있음에도 모든 언어들은 각각의 목적에 설계되어 있어서 그 목적을 벗어나면
+<br>단점으로 작용합니다. 루아의 경우 파이썬 이나 루비 같은 언어에 비해 객체 지향의 약하다는'
+<br>것입니다.
+<br>또한 모든 스크립트 언어가 가지는 스크립트 자체의 한계인 코드 최적화가 어렵고, 속성과
+<br>값들이 프로그램이 실행되는 시점에서 정해지는 런타임 속성 때문에 스크립트를 작성한
+<br>사람에 따라 성능의 차이가 올 수 있다는 단점이 있습니다.
+<br>
+<br>하지만 이것은 루아의 성능과 간결함에 비교했을 때 그리 큰 결점이 되지 못합니다. 속도와
+<br>성능, 작업의 효율을 중시하는 게임제작에서 루아는 다른 어떤 언어보다도 가장 인기 있는
+<br>언어가 되고 있습니다. 이것은 근 미래에 루아가 내장된 프로그램에서 루아를 가지고
+<br>기획자들이 프로그래머의 도움 없이 독자적으로 게임을 만들 날을 앞당기고 있습니다.
+<br>
+<br>서론이 길었는데 이제 본격적으로 루아를 프로그램에 embedding 해 봅시다.
+<br>
+<br>첫 번째로 소스 코드를 <A href="https://github.com/3dapi/dv02_script/raw/master/http://www.lua.org">www.lua.org</A> 사이트에서 다운로드하고 정적 라이브러리를 만들어 냅니다.
+<br>루아 소스는 5.02 버전으로 하겠습니다. 이 작업이 불편한 분은 <A href="https://github.com/3dapi/dv02_script/raw/master/src/lua_5_0_2_C++.zip">lua_5_0_2_C++.zip</a> 을
+<br>이용해도 됩니다.
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<h2>1.1 Lua 초기화 / 해제</h2>
+<br>루아를 사용하기 위해서 다음과 같은 헤더 파일과 전역 변수가 필요합니다.
+<br>
+<pre>
+	#include < stdio.h>
+
+	#include < lua/lua.h>
+	#include < lua/lualib.h>
+	#include < lua/lauxlib.h>
+
+	// Lua interpreter
+	lua_State* g_pLuaSt;
+</pre>
+<br>루아의 시작은 파일을 열 때 fopen 을 사용하듯 lua_open() 함수를 사용합니다. 루아를
+<br>해제하는 것은 fclose() 함수와 비슷하게 lua_close(g_pLuaSt) 함수를 이용합니다.
+<br>간단하게 루아를 사용할 수 있는지 다음 코드로 확인할 수 있습니다.
+<br>
+<pre>
+	void main()
+	{
+		printf("LUA Init and Destroy.\n\n");
+		// initialize Lua
+		g_pLuaSt = lua_open();
+
+		// load Lua libraries
+		luaopen_base(g_pLuaSt);
+		luaopen_io(g_pLuaSt);
+		luaopen_math(g_pLuaSt);
+		luaopen_string(g_pLuaSt);
+		luaopen_table(g_pLuaSt);
+
+		// cleanup Lua
+		lua_close(g_pLuaSt);
+	}
+</pre>
+<br>위에서 luaopen_… 으로 시작하는 함수들은 스크립트에서 적용할 수 있는 루아 함수들을
+<br>그룹별로 모아 놓은 라이브러리 입니다. io는 입/출력을 의미하며 파일을 다룰 때 사용하고
+<br>math는 sin, cos, tan 등 수학 함수를 사용할 때, string을 문자열을 다룰 때 table 은
+<br>구조체와 같은 자료구조에 대한 스크립트 함수들의 라이브러리 입니다.
+<br>다음 예제는 루아를 생성하고 해제하는 간단한 코드 입니다.
+<br>
+<br><a href="https://github.com/3dapi/dv02_script/raw/master/LuaBgn01_start.zip">LuaBgn01_start.zip</a>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<h2>1.2 텍스트 파일 사용하기</h2>
+<br>루아를 사용하는 방법은 루아문법에 맞게 작성한 텍스트 파일을 읽어와서 실행하는 방법과
+<br>C코드내부에서 문자열을 읽어와서 실행하는 2가지 방법이 있습니다.
+<br>문자열을 이용할 때는 문자열 -> lua_dostring() -> lua_getglobal() -> lua_pcall() 순으로
+<br>이루어집니다.
+<br>
+<br>다음과 같이 사용자가 루아 문법에 맞게 문자열을 만들었다고 가정합시다.
+<br>
+<pre>
+	const char *ScriptString =
+	{
+		"--Scritp Application Function	\n"
+		"function AppFunction1(x)	\n"
+		"  return x * 2			\n"
+		"end				\n"
+
+		"function AppFunction2(x, y)	\n"
+		"  return x * y			\n"
+		"end				\n"
+	};
+</pre>
+<br>이 문자열을 해석하기 위해서 다음과 같이 코드를 작성합니다.
+<br>
+<pre>
+	lua_dostring(g_pLuaSt, ScriptString);
+</pre>
+<br>다음으로 문자열에 포함되어 있는 함수를 호출하기 위해 lua_getglobal() 함수를 이용합니다.
+<br>여기서 필요한 함수를 문자열로 작성하면 됩니다.
+<br>
+<pre>
+	lua_getglobal(g_pLuaSt, "AppFunction1");
+</pre>
+<br>이렇게 해석된 함수를 실행하기만 하면 되는데 위의 함수처럼 인수가 있을 경우 인수의
+<br>수만큼 lua_pushnumber() 혹은 lua_pushstringnumber() 함수를 호출 하면 됩니다.
+<br>
+<pre>
+	lua_getglobal(g_pLuaSt, "AppFunction1");
+	lua_pushnumber(g_pLuaSt, x);
+</pre>
+<br>이제 함수의 호출을 lua_pcall(루아 포인터, 인수 개수, 반환(리턴) 개수,…)를 적어주면
+<br>됩니다.
+<br>
+<pre>
+	lua_pcall(g_pLuaSt, 1, 1, 0);
+</pre>
+<br>"AppFunction2"함수처럼 인수가 2이고 리턴이 한 개이면 다음과 같이
+<br>
+<pre>
+	lua_pushnumber(g_pLuaSt, x);
+	lua_pushnumber(g_pLuaSt, y);
+
+	lua_pcall(g_pLuaSt, 2, 1, 0);
+</pre>
+<br>코드를 작성하면 됩니다.
+<br>
+<br>만약 lua_pcall() 함수를 통해서 루아의 함수를 호출했고, 이의 반환을 받으려면 먼저 반환된
+<br>개수를 확인해야 합니다. 이를 담당하는 함수가 lua_gettop() 함수 입니다.
+<br>그리고 반환된 값을 얻기 위해 숫자의 경우lua_tonumber(), 문자의 경우 lua_tostring() 함수를
+<br>이용합니다.
+<br>
+<pre>
+	nIdx = lua_gettop(g_pLuaSt);
+	z = lua_tonumber(g_pLuaSt, nIdx);
+	printf("The result was: %lf\n", z);
+</pre>
+<br>자세한 코드는 다음 예제를 참고하기바랍니다.
+<br>
+<br><a href="https://github.com/3dapi/dv02_script/raw/master/LuaBgn02_dostring.zip">LuaBgn02_dostring.zip</a>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<h2>1. 3 텍스트 파일 사용하기</h2>
+<br>위의 예제를 순전히 예제를 위한 코드입니다. 사용자는 스크립트 작업을 텍스트로 만들고
+<br>실행하는 것이 대부분입니다. 따라서 텍스트 파일로 작성한 것을 실행할 수 있도록 프로그램을
+<br>만들어야 합니다.
+<br>
+<br>문자열을 루아에 로딩하는 함수가 lua_dostring() 또는 lua_dobuffer() 이라면 파일을
+<br>로딩하는 함수는 lua_dofile() 함수 입니다.
+<pre>
+	lua_dofile(g_pLuaSt, "script/sample.lua");
+</pre>
+<br>루아는 파일 자체를 함수로 보기도 합니다. 따라서 스크립트 파일의 마지막에서 함수 밖의
+<br>전역으로 return …와 같은 구문을 작성할 수 있습니다.
+<br>
+<pre>
+	- script/sample.lua 파일 -
+
+	…
+	function AppFunction(n)
+	  return n * 3
+	end
+
+	return AppFunction(123)
+</pre>
+<br>이러한 경우에도 앞서 함수호출의 반환 값을 받듯이 다음과 같은 형태의 코드를 작성하면
+<br>됩니다.
+<br>
+<pre>
+	double result = lua_tonumber(g_pLuaSt, lua_gettop(g_pLuaSt));
+</pre>
+<br>이 예제의 전체 코드는 <a href="https://github.com/3dapi/dv02_script/raw/master/LuaBgn03_dofile.zip">LuaBgn03_dofile.zip</a> 안에 있습니다.
+<br>
+<br>종종 암호화 하거나 파일이 머지(merge) 되어 있는 경우 메모리 버퍼를 사용해야 합니다.
+<br>루아를 이를 위해 lua_dobuffer() 함수를 지원합니다.
+<br>
+<pre>
+	lua_dobuffer(pL, sBuf, iSize , sBuf);
+</pre>
+<br>이 예제의 전체 코드는 <a href="https://github.com/3dapi/dv02_script/raw/master/LuaBgn03_dobuffer.zip">LuaBgn03_dobuffer.zip</a> 안에 있습니다.
+<br>
+<br>Lua_dobuffer() 함수의 응용을 위해 간단하게 xor 를 이용해서 암호화 예제를 만들어
+<br>보았습니다.
+<br>
+<br><a href="https://github.com/3dapi/dv02_script/raw/master/LuaBgn03_enc.zip">LuaBgn03_enc.zip</a>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<h2>1.4 Lua API 함수 연습</h2>
+<br>앞서 문자열로 작성한 루아 스크립트를 읽어와서 실행해 보았습니다. 이것을 파일로 작성하고
+<br>실행해 봅시다. 이에 대한 예제로 사칙연산을 루아 스크립트 파일로 작성하고 이를 메인
+<br>프로그램에서 불러와 실행하는 예제를 만들어 보겠습니다.
+<br>
+<br>
+<IMG src="https://github.com/3dapi/dv01_max/raw/master/img_src/lua_flow.png" BORDER="0">
+<br>< lua API와 lua Glue>
+<br>
+<br>
+<br>먼저 루아 스크립트 파일 math.lua 에서는 다음과 같이 작성 합니다. 루아 스크립트로 만든
+<br>함수를 앞으로 <B>Lua API</B> 라고 하겠습니다.
+<br>
+<pre>
+	-- Simple LUA Program
+
+	function add ( x, y )
+		return x + y
+	end
+
+	function sub ( x, y )
+		return x - y
+	end
+
+	function mul ( x, y )
+		return x * y
+	end
+
+	function div ( x, y )
+		return x / y
+	end
+
+	function ReturnFunction(x, y )
+		var1 = add ( x, y )
+		print ('add', var1)
+		var2 = sub ( x, y )
+		print ('sub', var2)
+
+		return var1 * var2
+	end
+</pre>
+<br>이를 메인 프로그램에서는 다음과 같이 처리합니다.
+<br>
+<pre>
+	lua_dofile(g_pLuaSt, "script/math.lua");
+
+	// the function name
+	lua_getglobal(g_pLuaSt, "add");
+
+	// the first argument
+	lua_pushnumber(g_pLuaSt, iFrst );
+
+	// the second argument
+	lua_pushnumber(g_pLuaSt, iScnd );
+
+	// call the function with 2 arguments, return 1 result
+	lua_call(g_pLuaSt, 2, 1);
+
+	// get the result
+	rst = lua_tonumber(g_pLuaSt, -1);
+	lua_pop(g_pLuaSt, 1);
+
+	lua_getglobal(g_pLuaSt, "sub");
+	lua_pushnumber(g_pLuaSt, iFrst );
+	lua_pushnumber(g_pLuaSt, iScnd );
+	lua_call(g_pLuaSt, 2, 1);
+
+	rst = lua_tonumber(g_pLuaSt, -1);
+	lua_pop(g_pLuaSt, 1);
+
+	printf( "The result is %lf\n", rst );
+	…
+</pre>
+<br>lua_dofile(), lua_getglobal(), lua_pcall(), lua_push…(), lua_gettop(), lua_tonumber()
+<br>함수 정도만 기억하면 루아 API 함수들을 얼마든지 불러와 실행 할 수 있습니다.
+<br>
+<br>자세한 코드는 다음 예제를 참고하기바랍니다.
+<br>
+<br><a href="https://github.com/3dapi/dv02_script/raw/master/LuaBgn04_api.zip">LuaBgn04_api.zip</a>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<h2>1.5 Lua Glue 함수</h2>
+<br>앞서 루아 스크립트 파일에서 작성한 함수를 Lua API라고 했습니다. 반대로 메인 프로그램에서
+<br>작성한 함수를 스크립트에서 호출해서 사용할 수 있도록 만든 함수를 <B>Lua Glue(루아 글루)</B>
+<br>함수라고 합니다.
+<br>
+<br>글루 함수를 만들기 위해서 몇 가지 규칙을 지켜야 합니다.
+<UL>
+	<LI>첫 번째, 글루 함수의 타입은 static int 입니다.
+	<LI>두 번째, 글루 함수의 인수는 (lua_State *g_pLuaSt) 한가지 방법입니다.
+	<LI>세 번째, 글루 함수의 리턴 값은 스트립트 파일에서 글루 함수 호출할 때 반환 받을 수 있는
+	<LI>리턴의 수 입니다.
+	<LI>네 번째, 글루 함수를 이용하기 위해서 lua_dofile(), 혹은 lua_dostring() 함수를 호출하기
+	<br>전에 lua_register() 함수를 통해서 글루 함수를 등록해야 합니다. lua_dofile() 함수 등에서
+	<br>문법 해석할 때 오류가 발생하지 않습니다.
+</UL>
+<br>글루 함수의 작성은 다음과 같이 합니다.
+<br>
+<pre>
+	static int Lua_SendComplex(lua_State *g_pLuaSt)
+	{
+		int number1 =1111;
+		lua_pushnumber(g_pLuaSt, number1);
+
+		number1 =2222;
+		lua_pushnumber(g_pLuaSt, number1);
+
+		char	sMsg1[128];
+		strcpy(sMsg1, "Send String One");
+		lua_pushstring(g_pLuaSt, sMsg1);
+
+		char	sMsg2[128];
+		strcpy(sMsg2, "Send String Two");
+		lua_pushstring(g_pLuaSt, sMsg2);
+
+	//	4개의 Argument를 전달한다.
+		return 4;
+	}
+</pre>
+<br>주의할 것은 C언어의 경우 반환(return)은 없거나 한 개 뿐이지만 루아의 경우 여러 개를
+<br>반환할 수 있습니다. Lua_to…(루아포인터, 인덱스) 함수에서 인덱스는 1부터 시작하는데
+<br>1은 글루 함수로 전달된 첫 번째 인수, 2는 글루 함수로 전달된 첫 번째 인수 등을 가르킵니다.
+<br>
+<br>이렇게 글루 함수를 만들었다면 스크립트에서 사용할 수 있도록 등록을 해야 합니다.
+<br>
+<pre>
+	lua_register(g_pLuaSt, "Lua_SendComplex", Lua_SendComplex);
+</pre>
+<br>lua_register() 함수의 두 번째 문자열은 스크립트에서 사용하는 함수 이름과 일치해야 합니다.
+<br>종종 글루 함수 이름과 스크립트 에서 호출 하는 함수 이름이 다른 경우도 있는데 특별한
+<br>경우가 아니라면 같이 맞추어 놓는 것이 좋습니다.
+<br>
+<br>반환 값이 여러 개인 글루 함수의 경우 스크립트 파일에서 다음과 같이 작성하면 됩니다.
+<br>
+<pre>
+	Rcv3, Rcv4, Rcv5, Rcv6 = Lua_SendComplex()
+</pre>
+<br>이렇게 등록을 하고 나면 lua_dofile()함수를 통해서 텍스트 파일을 해석해서 실행합니다.
+<br>
+<pre>
+	lua_dofile(g_pLuaSt, "script/Script.lua");
+</pre>
+<br>전체 코드는 다음 예제를 참고하기 바랍니다.
+<br>
+<br><a href="https://github.com/3dapi/dv02_script/raw/master/LuaBgn05_glue.zip">LuaBgn05_glue.zip</a>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<h2>1.6 Lua Glue 함수와 인수</h2>
+<br>만약 스크립터가 다음과 같은 문장을 만들었다고 가정합시다.
+<br>
+<pre>
+	SendC = Lua_ParseArgument(4000, "안녕", "나 이쁘나?", 5000, "마이 묵었다 아이가", 300)
+</pre>
+<br>이렇게 작성된 문장을 글루 함수에서는 6개의 인수를 처리하고 1개의 리턴 값을 만들어야
+<br>합니다. 그런데 글루 함수의 인수는 lua_state 포인터만 전달 받을 수 있으므로 앞서
+<br>lua_gettop() 함수와 lua_to…() 함수를 이용해서 해석을 해야 합니다.
+<br>
+<br>즉 위에 대한 글루 함수는 다음과 같이 될 수 있습니다.
+<br>
+<pre>
+	static int Lua_ParseArgument(lua_State *g_pLuaSt)
+	{
+	char	sRcvMsg[512];
+		double	fRcvNumber;
+		int i;
+		int n = lua_gettop(g_pLuaSt);
+
+		printf("루아로 부터 받은 인자의 수: %d\n", n);
+
+		for(i=1; i< = n; ++i)
+		{
+			if (!lua_isnumber(g_pLuaSt, i))
+			{
+				memset(sRcvMsg, 0, sizeof(sRcvMsg));
+				strcpy(sRcvMsg, lua_tostring(g_pLuaSt, i));
+				printf("%d: %s\n", i, sRcvMsg);
+			}
+			else
+			{
+				fRcvNumber = lua_tonumber(g_pLuaSt, i);
+				printf("%d: %lf\n", i, fRcvNumber);
+			}
+		}
+
+		lua_pushnumber(g_pLuaSt, n);
+		return 1; 	// 루아스크립트로 되돌려 주는 수
+	}
+</pre>
+<br>루아의 타입은 number, string ,bool, nil 등이 있습니다. bool은 number로 대부분 대치해서
+<br>사용하므로 주로 사용하는 타입은 number 와 string 입니다. number는 C 언어에서 double과
+<br>같습니다.
+<br>만약 사용자가 number 혹은 string 타입만 사용한다면 루아에서 글루 함수로 전달하는
+<br>인수에 대한 타입을 lua_isnumber() 함수 가지고 판단 할 수 있는 코드를 작성할 수 있습니다.
+<br>
+<br>전체 코드는 다음 예제를 참고하기 바랍니다.
+<br>
+<br><a href="https://github.com/3dapi/dv02_script/raw/master/LuaBgn06_argument.zip">LuaBgn06_argument.zip</a>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<h2>1.7 Lua Glue 함수와 인수</h2>
+<br>앞서 루아의 기초적인 내용은 모두 끝났습니다. 이를 바탕으로 루아를 메인 프로그램에
+<br>적용하는 방법을 생각해 봅시다.
+<br>
+<br>게임 프로그램의 상태 진행은 시작-> 게임데이터 초기화 -> 장면 데이터 갱신 ->
+<br>장면 렌더링 -> 게임데이터 해제 -> 종료 순으로 진행 됩니다.
+<br>이를 위해 루아 API 와 글루 함수를 만들어야 하는데 API 함수는 위의 상태에 맞게
+<br>만들어주면 됩니다.
+<br>
+<pre>
+	-- Simple LUA Program
+
+	function LuaApi_Create()
+	…
+	end
+
+	function LuaApi_Init()
+	…
+	end
+
+	function LuaApi_Destroy()
+	…
+	end
+
+	function LuaApi_FrameMove()
+	…
+	end
+
+	function LuaApi_Render()
+	…
+	end
+</pre>
+<br>API 함수는 메인 프로그래머가 꼭 기억을 해야 하므로 반드시 스크립터와 의견을 맞추어야
+<br>합니다. 따라서 너무 많은 API 함수는 혼란을 가중할 우려가 있으므로 대략 10 미만 정도로
+<br>유지 하는 것이 좋습니다.
+<br>위와 같이 API 함수를 정했다면 나머지 메인 프로그래머는 만들어서 스크립터를 기쁘게
+<br>해주면 됩니다.
+<br>
+<br>게임의 진행에 관련한 코드는 다음을 참고하기 바랍니다.
+<br>
+<br><a href="https://github.com/3dapi/dv02_script/raw/master/LuaBgn07_appflow.zip">LuaBgn07_appflow.zip</a>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<h1>2 Lua for 2D 게임</h1>
+<h2>2.1 App DirectX</h2>
+<br>앞의 루아 기초에서 가장 간단한 게임루프를 콘솔로 만들어 보았습니다. 이 번에는 게임에서
+<br>사용되는 윈도우와 DirectX 안에서 실행하도록 만들어 봅시다.
+<br>DirectX는 2003 summer SDK를 기초로 DirectX 9.0의 위저드를 이용해서 윈도우 생성과
+<br>디바이스 초기화 코드를 만들었습니다.
+<br>루아의 초기화 및 글루 함수의 등록은 윈도우와 디바이스가 만들어지기 전에 완료해야
+<br>합니다.
+<br>
+<br><a href="https://github.com/3dapi/dv02_script/raw/master/LuaDx01_basic.zip">LuaDx01_basic.zip</a> 예제를 보면 WinMain()함수는 루아와 관련된 코드를 먼저 실행하고
+<br>있음을 볼 수 있습니다.
+<br>
+<pre>
+INT WINAPI WinMain( HINSTANCE hInst, HINSTANCE, LPSTR, INT )
+{
+	INT		hr;
+	CMain d3dApp;
+
+	g_pApp  = &d3dApp;
+
+	InitCommonControls();
+
+	if(FAILED(LuaStartUp()))
+		return -1;
+
+	if( FAILED( d3dApp.Create( hInst ) ) )
+		return 0;
+
+	hr = d3dApp.Run();
+
+	LuaClose();
+
+	return hr;
+}
+</pre>
+<br>또한 CLuaGlue 클래스에 글루 함수들을 모아 놓고 있음을 볼 수 있습니다. 그리고 루아
+<br>API함수들을 다음 함수들 안에 구현해 놓고 있습니다.
+<br>
+<pre>
+	int		LuaApiInit();
+	int		LuaApiDestroy();
+	int		LuaApiFrameMove();
+	int		LuaApiRender();
+</pre>
+<br>이렇게 API 함수들을 처리하기위한 함수들은 CMain 클래스의 멤버 함수인 Init(), Destroy(),
+<br>FrameMove(), Render() 안에서 호출 됩니다. 또한 루아의 초기화와 라이브러리 등록,
+<br>글루 함수의 등록은 LuaStartUp()함수에서 처리하고 루아의 해제는 LuaClose()함수에서
+<br>처리합니다.
+<br>
+<br>이 정도의 틀을 설정할 수 있다면 스크립터가 사용하는 글루 함수의 추가는 위의 예제
+<br>코드에 추가를 하면 됩니다.
+<br>추가하는 순서는 CLuaGlue 클래스에 static int GlueFunction(LuaState* pL) 형태의
+<br>글루 함수를 선언을 하고, LuaStartUp()함수에 lua_register() 함수를 통해서 글루 함수를
+<br>설정하며, cpp 파일에서 이를 구현하면 됩니다.
+<br>좀 더 자세한 코드는 <a href="https://github.com/3dapi/dv02_script/raw/master/LuaDx01_basic.zip">LuaDx01_basic.zip</a> 예제를 참고하기 바랍니다.
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<h2>2.2 Add Input</h2>
+<br>게임 프로그램에서 DirectX에 대한 환경 설정 이후 가장 먼저 구현해야 하는 것이 키보드와
+<br>마우스에 대한 인풋 처리입니다. 인풋 클래스는 2D 게임 제작에 사용되었던 CMcInput
+<br>클래스를 이용하겠습니다.
+<br>
+<br>CMain 클래스에 CMcInput 클래스의 인스턴스를 생성하고, 멤버 함수들을 각각의 역할에 맞게
+<br>설정한 다음 글루 함수를 다음과 같이 구현 합니다.
+<br>
+<pre>
+	struct CLuaGlue
+	{
+	static int	Lua_MousePos(lua_State* pL);		// 마우스 위치
+	static int	Lua_MouseEvnt(lua_State* pL);		// 마우스 이벤트
+	…
+	}
+
+	int CLuaGlue::Lua_MousePos(lua_State* pL)
+	{
+		D3DXVECTOR3	v = g_pApp->m_pInput->GetMousePos();
+		lua_pushnumber(pL, v.x);
+		lua_pushnumber(pL, v.y);
+		lua_pushnumber(pL, v.z);
+
+		return 3;
+	}
+
+
+	int CLuaGlue::Lua_MouseEvnt(lua_State* pL)
+	{
+		lua_pushnumber(pL, g_pApp->m_pInput->BtnState(0) );
+		lua_pushnumber(pL, g_pApp->m_pInput->BtnState(1) );
+		lua_pushnumber(pL, g_pApp->m_pInput->BtnState(2) );
+
+		return 3;
+	}
+</pre>
+<br>이렇게 구현하고 나서 lua_register()함수를 통해서 글루 함수 등록을 해야 스크립터가
+<br>사용할 수 있다는 것은 자명하니 이 부분은 생략하겠습니다.
+<br>
+<br>스크립터는 스크립트 파일에 다음과 같이 작성을 해서 인풋 클래스의 처리 결과를 이용할
+<br>수 있습니다.
+<br>
+<pre>
+	g_MouseX = 0
+	g_MouseY = 0
+	g_MouseZ = 0
+
+	-- 1: Down, 2: Up, 3: Press
+	g_MouseEvntL=0
+	g_MouseEvntR=0
+	g_MouseEvntM=0
+
+
+	function LuaApi_FrameMove()
+		Lua_WindowTitle("윈도우 모드 변환-> 우측버튼, 상태 가리기 ->좌측 버튼")
+
+		g_MouseEvntL, g_MouseEvntR, g_MouseEvntM = Lua_MouseEvnt()
+
+		if 1 == g_MouseEvntR then
+			Lua_ChangeMode()
+		end
+
+		if 3 == g_MouseEvntL then
+			Lua_ShowState(0)
+		else
+			Lua_ShowState(1)
+		end
+	end
+</pre>
+<br>이에 대한 모든 코드는 다음 예제를 참고 하기 바랍니다.
+<br>
+<br><a href="https://github.com/3dapi/dv02_script/raw/master/LuaDx02_input.zip">LuaDx02_input.zip</a>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<h2>2.3 Add Texture</h2>
+<br>이제 텍스처를 붙일 차례입니다. 텍스처만 붙인다면 스크립트로 2D 게임을 만들 수 있을
+<br>정도의 구조가 완성이 된 셈입니다. 구현 순서는 인풋과 비슷합니다.
+<br>다음과 같은 함수를 글루 함수로 등록을 합니다.
+<br>
+<pre>
+	static int	Lua_TextureCreate(lua_State* pL);	// Texture 생성
+	static int	Lua_TextureDestroy(lua_State* pL);	// Texture 소멸
+	static int	Lua_TextureWidth(lua_State* pL);	// Texture Width
+	static int	Lua_TextureHeight(lua_State* pL);	// Texture Height
+	static int	Lua_TextureDraw(lua_State* pL);		// Texture Draw
+
+	…
+
+	int CLuaGlue::Lua_TextureCreate(lua_State* pL)
+	{
+		int	n = lua_gettop(pL);
+		char	sFile[MAX_PATH]={0};
+
+		strcpy(sFile, (char*)lua_tostring(pL, 1));
+
+		LPDSTEXTURE	p = NULL;
+		DWORD	dMip = 1;
+
+		if(FAILED(DsDev_CreateTexture("File", &p, g_pApp->GetDevice(), sFile, &dMip)))
+		{
+			lua_pushnumber(pL, 0);
+			return 1;
+		}
+
+		DWORD	d = (DWORD)p;
+		lua_pushnumber(pL, d);
+		return 1;
+	}
+
+	int CLuaGlue::Lua_TextureDestroy(lua_State* pL)
+	{
+		int	n	= lua_gettop(pL);
+		DWORD	d	= (DWORD)lua_tonumber(pL, 1);
+		LPDSTEXTURE	p = (LPDSTEXTURE)d;
+
+		if(p)
+			delete p;
+
+		return 0;
+	}
+
+	int	CLuaGlue::Lua_TextureWidth(lua_State* pL)
+	{
+		int	n	= lua_gettop(pL);
+		DWORD	d	= (DWORD)lua_tonumber(pL, 1);
+		LPDSTEXTURE	p = (LPDSTEXTURE)d;
+
+		if(!p)
+		{
+			lua_pushnumber(pL, 0);
+			return 1;
+		}
+
+		int	v = p->GetImageWidth();
+
+		lua_pushnumber(pL, v);
+		return 1;
+	}
+
+
+	int	CLuaGlue::Lua_TextureHeight(lua_State* pL)
+	{
+		int	n	= lua_gettop(pL);
+		DWORD	d	= (DWORD)lua_tonumber(pL, 1);
+		LPDSTEXTURE	p = (LPDSTEXTURE)d;
+
+		if(!p)
+		{
+			lua_pushnumber(pL, 0);
+			return 1;
+		}
+
+		int	v = p->GetImageHeight();
+
+		lua_pushnumber(pL, v);
+		return 1;
+	}
+
+
+	int CLuaGlue::Lua_TextureDraw(lua_State* pL)
+	{
+		int	n	= lua_gettop(pL);
+		DWORD	d	= (DWORD)lua_tonumber(pL, 1);
+		LPDSTEXTURE	p = (LPDSTEXTURE)d;
+
+		if(!p)
+			return 0;
+
+		RECT		rc;
+		D3DXVECTOR2	vcP(0,0);
+		D3DXVECTOR2	vcS(1,1);
+
+		p->GetImageRect(&rc);
+
+		if(n < = 5)
+		{
+			rc.left		= (LONG)lua_tonumber(pL, 2);
+			rc.top		= (LONG)lua_tonumber(pL, 3);
+			rc.right	= (LONG)lua_tonumber(pL, 4);
+			rc.bottom	= (LONG)lua_tonumber(pL, 5);
+		}
+
+		else if(n<=7)
+		{
+			vcP.x		= (FLOAT)lua_tonumber(pL, 6);
+			vcP.y		= (FLOAT)lua_tonumber(pL, 7);
+		}
+
+		g_pApp->m_pSprite->Draw(p, &rc, &vcS, &vcP, D3DXCOLOR(1,1,1,1));
+
+		return 0;
+	}
+</pre>
+<br>Lua_register()함수를 이용해서 사용할 수 있도록 등록을 하고 다음과 같이 스크립트에서
+<br>사용하면 됩니다.
+<br>
+<pre>
+	g_TxI	={}	-- Texture Id
+	g_TxW	={}	-- Texture Width
+	g_TxH	={}	-- Texture Height
+
+	function LuaApi_Init()
+		g_TxI[1]	= Lua_TextureCreate("Texture/lena.png")
+		g_TxW[1]	= Lua_TextureWidth (g_TxI[1])
+		g_TxH[1]	= Lua_TextureHeight(g_TxI[1])
+		return 0
+	end
+
+	function LuaApi_Destroy()
+		Lua_TextureDestroy(g_TxI[1])
+		return 0
+	end
+
+	function LuaApi_Render()
+		Lua_TextureDraw(g_TxI[1], 0,0, g_TxW[1], g_TxH[1], g_MouseX, g_MouseY)
+		return 0
+	end
+</pre>
+<br>여기서 ={}의 의미는 루아 문법의 배열을 의미하며 C++ 언어의 벡터와 유사합니다. 대부분
+<br>스크립트 언어는 C언어와 다르게 인덱스를 0이 아닌 1에서 시작합니다. g_TxI[인덱스] 와
+<br>같이 작성을 하면 루아는 자동으로 메모리를 늘려 해당 인덱스의 배열 원소를 사용할 수
+<br>있게 합니다.
+<br>
+<br>자세한 코드는 다음 예제를 참고 하기 바랍니다.
+<br>
+<br><a href="https://github.com/3dapi/dv02_script/raw/master/LuaDx03_texture.zip">LuaDx03_texture.zip</a>
+<br>
+<br>위의 예제에서 텍스처 생성과 이를 화면에 출력하는 스프라이트는 2003 summer 버전을
+<br>응용해서 만든 IDsSprite, IDsTexture 라이브러리를 이용했습니다.
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<h2>2.4 Add Sound</h2>
+<br>인풋, 텍스처, 사운드, 폰트 정도만 구현되어 있어도 2D 게임프로그램을 충분히 만들 수
+<br>있습니다. 앞서 텍스처에 대한 글루 함수들을 구현했고 이제 사운드를 붙일 차례입니다.
+<br>사운드는 Direct Sound를 사용할 것인데 여기서는 사운드에 대한 자세한 설명은 하지 않고
+<br>DirectX SDK 안에 있는 위저드 코드를 그대로 사용해서 사운드에 대한 글루 함수를
+<br>구현하겠습니다.
+<br>
+<br>위저드로 사운드를 만들면 dsutil.h, dsutil.cpp 파일이 같이 만들어 지는데 이것을 가져와
+<br>프로젝트에 추가한 후 다음과 같이 코드를 작성합니다.
+<br>
+<pre>
+	class CMain : public CD3DApplication
+	{
+	public:
+		…
+		CSoundManager*	m_pSoundManager;	// DirectSound manager class
+	…
+
+	HRESULT CMain::Init()
+	{
+		…
+		// 사운드 매니저 생성
+		m_pSoundManager = new CSoundManager();
+		if( FAILED( hr = g_pApp->m_pSoundManager->Initialize( m_hWnd, DSSCL_PRIORITY ) ) )
+			return -1;
+
+		if( FAILED( hr = g_pApp->m_pSoundManager->SetPrimaryBufferFormat( 2, 22050
+	, 16 ) ) )
+			return -1;
+	…
+
+	HRESULT CMain::Destroy()
+	{
+		if(FAILED(LuaApiDestroy()))
+			return -1;
+
+	…
+		SAFE_DELETE( m_pSoundManager );
+	…
+	}
+</pre>
+<br>사운드 매니저는 포인터 이므로 CMain 클래스의 생성자에서 NULL로 초기화 하고 루아
+<br>스크립트에서 만든 데이터를 소멸한 후에 제거해야 합니다.
+<br>이렇게 사운드를 추가한 후에 글루 함수를 만드는데 사운드에 대한 기능은 생성, 소멸,
+<br>재생, 멈춤 4가지 경우를 만들면 되고 다음과 같이 함수를 구성해서 구현합니다.
+<br>
+<pre>
+	static int Lua_SoundCreate(lua_State* pL);	// 사운드 생성
+	static int Lua_SoundDestroy(lua_State* pL);	// 사운드 소멸
+	static int Lua_SoundPlay(lua_State* pL);	// 사운드 실행
+	static int Lua_SoundStop(lua_State* pL);	// 사운드 중지
+
+	…
+
+	int CLuaGlue::Lua_SoundCreate(lua_State* pL)
+	{
+		int	n = lua_gettop(pL);
+		CSound*	p = NULL;
+		char	sFile[MAX_PATH]={0};
+
+		strcpy(sFile, (char*)lua_tostring(pL,1));
+
+		if(FAILED(g_pApp->m_pSoundManager->Create( &p, sFile, 0, GUID_NULL, 5 )))
+		{
+			lua_pushnumber(pL, 0);
+			return 1;
+		}
+
+		DWORD	d = (DWORD)p;
+		lua_pushnumber(pL, d);
+		return 1;
+	}
+
+	int CLuaGlue::Lua_SoundDestroy(lua_State* pL)
+	{
+		int	n = lua_gettop(pL);
+		DWORD	d = (DWORD)lua_tonumber(pL, 1);
+		CSound*	p = (CSound*)d;
+
+		if(p)
+			delete p;
+
+		return 0;
+	}
+
+	int CLuaGlue::Lua_SoundPlay(lua_State* pL)
+	{
+		int	n = lua_gettop(pL);
+		DWORD	d = (DWORD)lua_tonumber(pL, 1);
+		CSound*	p = (CSound*)d;
+
+		if(!p)
+			return 0;
+
+		if(n>=2)
+			p->Play(0, DSBPLAY_LOOPING);
+		else
+			p->Play(0);
+
+		return 0;
+	}
+
+
+	int CLuaGlue::Lua_SoundStop(lua_State* pL)
+	{
+		int	n = lua_gettop(pL);
+		DWORD	d = (DWORD)lua_tonumber(pL, 1);
+		CSound*	p = (CSound*)d;
+
+		if(!p)
+			return 0;
+
+		p->Stop();
+
+		return 0;
+	}
+</pre>
+<br>스크립트에서는 다음과 같이 사용하면 됩니다.
+<br>
+<pre>
+	g_Snd	={}	-- Sound 배열
+
+	function LuaApi_Init()
+	…
+	g_Snd[2]	= Lua_SoundCreate("Sound/bounce.wav")
+	…
+	end
+
+	function LuaApi_Destroy()
+		…
+		Lua_SoundDestroy(g_Snd[2])
+		…
+	end
+
+	function LuaApi_FrameMove()
+		…
+		-- sound play
+		if 1 == g_MouseR then
+			Lua_SoundPlay(g_Snd[2])
+		end
+		…
+	end
+</pre>
+<br>이렇게 사운드를 루아에 추가해 보았습니다. 사운드의 경우 MIDI, 동영상, MP3 등과 비슷하게
+<br>동작하므로 이들을 묶어서 Media라는 통합된 글루 함수로 표현하는 경우도 있습니다. 이
+<br>부분은 여러분들이 확장하기바랍니다.
+<br>전체 코드는 다음 예제에 구현되어 있습니다.
+<br>
+<br><a href="https://github.com/3dapi/dv02_script/raw/master/LuaDx04_sound.zip">LuaDx04_sound.zip</a>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<h2>2.5 Add Font</h2>
+<br>2D 게임 제작을 위한 루아의 마지막 단계로 폰트가 남아 있습니다. 여기서는 ID3DXFont
+<br>자료구조를 스크립트에서 사용할 수 있도록 글루 함수를 만들겠습니다. 지금까지의 과정을
+<br>해온 분들은 이부분이 어렵지 않습니다.
+<br>텍스처, 사운드와 마찬가지로 static int 형의 글루 함수를 구현하고 lua_register()함수를
+<br>통해서 스크립트에서 사용할 수 있도록 등록을 하는 과정은 동일 합니다.
+<br>폰트는 생성, 소멸, 문자열 출력이 기본 동작입니다. 이것만 구현하면 되는데 ID3DXFont의
+<br>경우 창 모드와 전체 모드 전환에서 디바이스를 재설정해야 하는 작업이 필요합니다.
+<br>이것을 글루 함수로 만들어서 스크립터에게 하라는 것은 편리하게 사용하기 위한 스크립트의
+<br>취지에 어긋나게 되므로 메인 프로그래머가 처리를 해야 하고, 스크립터에게 넘긴 주소 값들을
+<br>저장해 두고, 화면의 전환에서 이를 자동으로 처리해야 합니다. 주소 값들을 저장하는 방법이
+<br>여러 가지 있을 수 있으나 여기서는 STL의 벡터를 이용하겠습니다. 구현은 다음과 같이
+<br>합니다.
+<br>
+<pre>
+	static std::vector< ID3DXFont* > m_vFont;		// 폰트 객체를 저장할 벡터
+
+	static int Lua_FontCreate(lua_State* pL);	// 폰트 생성
+	static int Lua_FontDestroy(lua_State* pL);	// 폰트 소멸
+	static int Lua_FontDraw(lua_State* pL);		// 문자열 출력
+
+	// 폰트 객체들의 디바이스 설정 함수(글루 함수는 아니다.)
+	static int Lua_FontRestore();			// 화면 모드 전환에서 디바이스 재설정
+	static int Lua_FontInvalid();			// 화면 모드 전환에서 디바이스 해제
+
+	…
+	// Static 멤버 초기화
+	std::vector< ID3DXFont*> CLuaGlue::m_vFont(0);
+
+	int CLuaGlue::Lua_FontCreate(lua_State* pL)
+	{
+		int		n = lua_gettop(pL);
+		LPD3DXFONT	p = NULL;
+
+		D3DXFONT_DESC	hFont;
+		memset(&hFont, 0, sizeof hFont);
+
+		hFont.Height	= (int)lua_tonumber(pL, 1);
+		hFont.Weight	= (int)lua_tonumber(pL, 2) * 100;
+		hFont.MipLevels	= 1;
+		hFont.CharSet	= HANGUL_CHARSET;
+		hFont.OutputPrecision= OUT_DEFAULT_PRECIS;
+		hFont.Quality	= ANTIALIASED_QUALITY;
+		hFont.PitchAndFamily=FF_DONTCARE;
+
+		strcpy(hFont.FaceName, (char*)lua_tostring(pL,3));
+
+		if(FAILED(D3DXCreateFontIndirect(g_pApp->GetDevice(), &hFont, &p)))
+		{
+			lua_pushnumber(pL, 0);
+			return 1;
+		}
+
+		// 폰트 객체를 벡터에 추가.
+		m_vFont.push_back(p);
+
+		DWORD	d = (DWORD)p;
+		lua_pushnumber(pL, d);
+		return 1;
+	}
+
+	int CLuaGlue::Lua_FontDestroy(lua_State* pL)
+	{
+		int		n = lua_gettop(pL);
+		DWORD		d = (DWORD)lua_tonumber(pL, 1);
+		LPD3DXFONT	p = (LPD3DXFONT)d;
+
+		if(p)
+			p->Release();
+
+		return 0;
+	}
+
+	int CLuaGlue::Lua_FontDraw(lua_State* pL)
+	{
+		int		n = lua_gettop(pL);
+
+		if(n < 4)
+		{
+			lua_pushnumber(pL, -1);
+			return 1;
+		}
+
+		DWORD		d = (DWORD)lua_tonumber(pL, 1);
+		LPD3DXFONT	p = (LPD3DXFONT)d;
+
+		if(!p)
+			return 0;
+
+		RECT	rc={0,0,0,0};
+		D3DXFONT_DESC	dsc;
+		p->GetDesc(&dsc);
+
+		char	sMsg[1024]={0};
+		strcpy(sMsg, (char*)lua_tostring(pL,4));
+
+		rc.left		= (int)lua_tonumber(pL, 2);
+		rc.top		= (int)lua_tonumber(pL, 3);
+		rc.right	= (int)(rc.left + strlen(sMsg) * 1.5f * dsc.Height);
+		rc.bottom	= rc.top  + dsc.Height;
+
+		DWORD	dColor = D3DXCOLOR(1,1,1,1);
+
+		if(n>4)
+		{
+			char sColor[32]={0};
+			strcpy(sColor, (char*)lua_tostring(pL,5) );
+			sscanf(sColor, "%x", &dColor);
+		}
+
+		p->DrawText(NULL, sMsg, -1, &rc, 0, dColor);
+
+		return 0;
+	}
+
+	// 화면 모드 전환에서 폰트에 디바이스 재설정
+	int CLuaGlue::Lua_FontRestore()
+	{
+		int iSize = CLuaGlue::m_vFont.size();
+
+		for(int i=0; i< iSize; ++i)
+		{
+			ID3DXFont*	p = CLuaGlue::m_vFont[i];
+
+			if(FAILED(p->OnResetDevice()))
+				return -1;
+		}
+
+		return 0;
+	}
+
+	int CLuaGlue::Lua_FontInvalid()
+	{
+		int iSize = CLuaGlue::m_vFont.size();
+
+		for(int i=0; i< iSize; ++i)
+		{
+			ID3DXFont*	p = CLuaGlue::m_vFont[i];
+
+			if(FAILED(p->OnLostDevice()))
+				return -1;
+		}
+
+		return 0;
+	}
+</pre>
+<br>좀 더 추가해야 할 것은 화면 모드 전환에 대한 처리를 CMain 클래스에서 함수 호출을
+<br>통해서 설정하는 코드입니다.
+<br>
+<pre>
+	HRESULT CMain::Restore()
+	{
+	…
+		if(FAILED( CLuaGlue::Lua_FontRestore()))
+			return -1;
+		…
+	}
+
+	HRESULT CMain::Invalidate()
+	{
+	…
+	if(FAILED( CLuaGlue::Lua_FontInvalid()))
+			return -1;
+		…
+	}
+</pre>
+<br>스크립트에서는 다음과 같이 사용합니다.
+<br>
+<pre>
+	g_Fnt	={}	-- Font
+
+	function LuaApi_Init()
+		…
+		-- 폰트 생성
+		g_Fnt[1]	= Lua_FontCreate(30, 4, "HY엽서L")
+		g_Fnt[2]	= Lua_FontCreate(14, 9, "궁서")
+		…
+	end
+
+	function LuaApi_Destroy()
+		…
+		-- 폰트 소멸
+		Lua_FontDestroy(g_Fnt[1])
+		Lua_FontDestroy(g_Fnt[2])
+		…
+	end
+
+	function LuaApi_Render()
+		…
+		-- 문자열 출력
+		Lua_FontDraw(g_Fnt[1], 20, 10, "마리오 HP", "0xFFFF0000")
+		…
+	end
+</pre>
+<br>전체 코드는 다음 예제에 구현되어 있습니다.
+<br>
+<br><a href="https://github.com/3dapi/dv02_script/raw/master/LuaDx05_font.zip">LuaDx05_font.zip</a>
+<br>
+<br>
+<br>폰트에서 벡터를 사용했는데 이를 텍스처와 사운드로 확대를 해서 스크립터가 메모리를
+<br>직접 해제하지 않고 호스트 프로그램 내부에서 삭제하도록 만들어 봅시다. 먼저 루아
+<br>스크립트 파일인 _main.lua 의 LuaApi_Destroy() 함수 내부에 있는 데이터 소멸과 관련된
+<br>코드는 전부 지우고, 다음으로 루아 글루 클래스에서 폰트와 마찬가지로 텍스처와 사운드의
+<br>벡터를 만들고, 또한 글루 함수로 만들어진 Lua_TextureDestroy(), Lua_SoundDestroy()
+<br>함수들을 일반 함수로 만듭니다.
+<br>이들은 글루 함수가 아니기 때문에 컴파일을 하면 lua_register 부분에서 에러가 발생합니다.
+<br>따라서 이 부분을 지우고, Destroy의 구현 부분에 가서 폰트와 마찬가지로 텍스처와 사운드
+<br>부분의 메모리를 delete 연산자를 통해서 메모리를 해제합니다. 마지막 단계로
+<br>CMain::Destroy() 함수 내부에서 텍스처와 사운드의 해제 함수를 호출합니다.
+<br>
+<br>이렇게 정리가 되면 더 이상 스크립터는 메모리 해제를 신경 쓰지 않아도 되게 됩니다. 즉
+<br>STL 벡터를 이용해서 Garbage Collector 와 같은 기능을 구현하게 된 것입니다. STL 벡터는
+<br>앞으로도 이와 같은 비슷한 일들을 수행하기 때문에 충분히 연습하는 것이 중요합니다.
+<br>다음은 전체 코드 입니다.
+<br>
+<br><A href="https://github.com/3dapi/dv02_script/raw/master/LuaDx05_vector.zip">LuaDx05_vector.zip</A>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<h2>2.6 Add Utilities</h2>
+<br>앞서 폰트를 추가를 통해서 2D 게임 제작에 대한 중요 객체들을 전부 글루 함수로
+<br>구현했습니다. 이제 남은 것은 루아 자체에서 제공되지 않는 글루 함수들을 메인
+<br>프로그래머가 추가하는 단계입니다. 이 것은 스크립터와 계속 회의를 하면서 추가해야
+<br>하는 부분이기도 합니다. 여기서는 2D 텍스처 애니메이션을 위해 시간 함수와 디버깅을
+<br>위한 메시지 창 출력을 추가해 보겠습니다.
+<br>
+<pre>
+	// Lua Utility Glue
+	static int Lua_GetTime(lua_State* pL);		// timeGetTime()
+	static int Lua_Sleep(lua_State* pL);		// sleep()
+	static int Lua_MessageBox(lua_State* pL);	// MessageBox()
+	…
+	// Lua Utility Glue
+	int CLuaGlue::Lua_GetTime(lua_State* pL)
+	{
+		DWORD v = timeGetTime();
+		lua_pushnumber(pL, v);
+		return 1;
+	}
+
+	int CLuaGlue::Lua_Sleep(lua_State* pL)
+	{
+		int n = lua_gettop(pL);
+
+		if(n< 1)
+			Sleep(1000);
+
+		int nMilliSecond = (int)lua_tonumber(pL, 1);
+		Sleep(nMilliSecond);
+
+		return 0;
+	}
+
+	int CLuaGlue::Lua_MessageBox(lua_State* pL)
+	{
+		char sMsg[4096];
+		char sTitle[512];
+
+		int n = lua_gettop(pL);
+
+		if(n< 1)
+		{
+			MessageBox(g_pApp->m_hWnd, NULL, NULL, 0);
+			return 0;
+		}
+
+		if(n< 2)
+		{
+			memset(sMsg, 0, sizeof(sMsg));
+			sprintf(sMsg, "%s", lua_tostring(pL, 1));
+			MessageBox(g_pApp->m_hWnd, sMsg, NULL, 0);
+			return 0;
+		}
+
+		if(n< 3)
+		{
+			memset(sMsg, 0, sizeof(sMsg));
+			memset(sTitle, 0, sizeof(sTitle));
+
+			sprintf(sMsg, "%s", lua_tostring(pL, 1));
+			sprintf(sTitle, "%s", lua_tostring(pL, 2));
+
+			MessageBox(g_pApp->m_hWnd, sMsg, sTitle, 0);
+			return 0;
+		}
+
+		if(n< 4)
+		{
+			memset(sMsg, 0, sizeof(sMsg));
+			memset(sTitle, 0, sizeof(sTitle));
+
+			sprintf(sMsg, "%s", lua_tostring(pL, 1));
+			sprintf(sTitle, "%s", lua_tostring(pL, 2));
+			int uType = lua_tonumber(pL, 3);
+
+			MessageBox(g_pApp->m_hWnd, sMsg, sTitle, uType);
+			return 0;
+		}
+
+		return 0;
+	}
+	…
+</pre>
+<br>시간관련함수는 스크립트에서 다음과 같이 사용하면 됩니다.
+<br>
+<pre>
+	function LuaApi_FrameMove()
+		…
+		-- Get Current Time(1/1000 second)
+		local Time = Lua_GetTime()
+
+		-- Setting Animation Index for Mario
+		if	Time > (g_AniTic[1]+200) then
+			g_AniIdx[1]	= g_AniIdx[1] + 1
+			g_AniTic[1] = Time
+
+			if g_AniIdx[1]>=18 then
+				g_AniIdx[1] = 0
+			end
+		end
+	…
+	end
+</pre>
+<br>전체 코드는 다음 예제에 구현되어 있습니다.
+<br>
+<br><a href="https://github.com/3dapi/dv02_script/raw/master/LuaDx06_util.zip">LuaDx06_util.zip</a>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<h1>3 중요 루아 문법</h1>
+<h2>3.1 배열</h2>
+<br>이번 장에서는 앞서 만든 루아가 내장된 실행파일을 가지고 루아 스크립트의 몇 가지
+<br>기술적인 부분을 살펴보겠습니다. 물론 루아의 문법도 공부해야 하겠지만 스크립트라는
+<br>것이 간단하게 쓰기 위해서 만든 것인 만큼 문법 또한 그리 까다롭지 않습니다.
+<br>스크립트를 변경해 가면서 문법과 기술적인 부분을 익혀 나가는 것이 좋습니다.
+<br>루아의 모든 변수는 local를 선언하지 않는 한 전역으로 만들어 지며 배열은 변수이름 = {}
+<br>식으로 만들어 갑니다.
+<br>
+<pre>
+	Array = {}
+	Array[10] = 100
+</pre>
+<br>대부분의 스크립트는 자료의 속성 중에 타입과 값이 동적으로 할당 됩니다.
+<br>위에서 변수 Array[100]에 값을 설정하는 순간 메모리와 값이 정해집니다.
+<br>또한 다음과 같이 이전 자료형과 전혀 다른 타입을 설정해도 됩니다.
+<br>
+<pre>
+	Array[11] = “Hello world”
+</pre>
+<br><a href="https://github.com/3dapi/dv02_script/raw/master/LuaDxApp01.zip">LuaDxApp01.zip</a>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<h2>3.2 dofile</h2>
+<br>루아스크립트의 매력 중에 하나가 스크립트 파일에서 다른 스크립트 파일을 호출할 수
+<br>있다는 것입니다. 게임이 커지고 이를 스크립트로 만들면 수 천에서 수 만 줄의 코드가
+<br>스크립트에 작성이 되어 스크립트 전체를 통제하기에 많이 힘이 듭니다.
+<br>루아는 코드를 여러 파일에서 만들 수 있고 이를 하나의 파일처럼 쓸 수 있는데 글루 함수인
+<br>dofile을 통해서 다른 스크립트 파일을 불러와서 같이 실행할 수 있습니다.
+<br>다음은 하나의 파일로 되어 있던 스크립트 파일을 여러 파일로 나누어서 실행하는 예제입니다.
+<br>
+<br><a href="https://github.com/3dapi/dv02_script/raw/master/LuaDxApp02.zip">LuaDxApp02.zip</a>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<h2>3.3 Meta Table</h2>
+<br>루아스크립트는 구조체나 클래스를 지원이 파이썬이나 루비 언어들에 비해 약합니다.
+<br>구조체와 비슷한 기능을 수행하는 것이 테이블인데 이 테이블을 사용하는 것이 약간
+<br>독특합니다.
+<br>다음과 같이 텍스처 아이디, 이미지 사이즈, 멤버함수 등을 포함하는 자료의 배열을
+<br>생각해 봅시다. 이를 루아에서는 다음과 같이 구현합니다.
+<br>
+<pre>
+	Texture={}
+	-- Texture Class
+	Texture={}
+
+	-- Texture Member Function
+	function Texture.Init(Tx)
+		Tx.iW	=Mcl_TextureWidth(Tx.Id)
+		Tx.iH	=Mcl_TextureHeight(Tx.Id)
+	end
+
+	function Texture.Draw(Tx, x, y, sX, sY, c)
+		Mcl_TextureDraw(Tx.Id, 0, 0, Tx.iW, Tx.iH, x, y, sX, sY, c)
+	end
+
+
+	for i=1, 100, 1 do
+		Texture[i]={}
+		Texture[i].Id=-1
+		Texture[i].iW=0
+		Texture[i].iH=0
+	end
+
+	…
+
+	Texture[2].Id	= Mcl_TextureLoad("Texture/Lenna.jpg");	Texture.Init(Texture[2])
+</pre>
+<br>루아의 자료구조는 1차원 배열이기 때문에 "Texture={}" 이런 문법이 필요하고,
+<br>Texture[i].Id=-1 와 같이 멤버처럼 사용하는 변수에 값을 할당 하려면 "Texture[i]={}"
+<br>이렇게 해주어야만 합니다.
+<br>
+<br>다음 예제는 게임에서 사용하는 테이블 중에서 텍스처 정보를 관리하는 간단한 테이블에
+<br>대한 예제입니다.
+<br>
+<br><a href="https://github.com/3dapi/dv02_script/raw/master/LuaDxApp03.zip">LuaDxApp03.zip</a>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<h2>3.3 User Define Structure</h2>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<h1>4 게임 예제</h1>
+<br>- 뱀 주사위게임
+<br>
+<br><a href="https://github.com/3dapi/dv02_script/raw/master/game/Game01_Snake_dice.zip">Game01_Snake_dice.zip</a>
+<br>
+<br>
+<br>- 뻥 장기
+<br>
+<br><a href="https://github.com/3dapi/dv02_script/raw/master/game/Game02_Blind_Chess.zip">Game02_Blind_Chess.zip</a>
+<br>
+<br>
+<br>- 장기 게임
+<br>
+<br><a href="https://github.com/3dapi/dv02_script/raw/master/game/Game03_Jang_gi.zip">Game03_Jang_gi.zip</a>
+<br>
+<br>
+<br>- ???
+<br>나도 알 수 없는 게임
+<br>
+<br><a href="https://github.com/3dapi/dv02_script/raw/master/game/Game04_Infinity_Jump.zip">Game04_Infinity_Jump.zip</a>
+<br>
+<br>
+
+</div>
+
+<?php
+	include '../base/lc_tail.php';
+?>
